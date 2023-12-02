@@ -1,0 +1,3 @@
+FROM ubuntu:jammy
+
+LABEL org.opencontainers.image.source https://github.com/nizarghribi/docker-images
