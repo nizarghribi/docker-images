@@ -1,0 +1,61 @@
+# [Choice] Ubuntu version (use jammy on local arm64/Apple Silicon): jammy, focal
+FROM ubuntu:jammy
+
+## Add image labels
+LABEL maintainer="nizar.ghribi@gmail.com"
+LABEL version="0.1"
+LABEL description="Docker Image for test DEV Environment"
+LABEL org.opencontainers.image.source https://github.com/nizarghribi/docker-images
+
+# Default to bash shell
+ENV SHELL=/bin/bash \
+    DOCKER_BUILDKIT=1
+
+# Set Environment Variables
+ENV TERRAFORM_VERSION=1.5.2 \
+    AZURE_CLI_VERSION=2.54.0-1~jammy \ 
+    POETRY_VERSION=1.6.1
+
+# Update Ubuntu Software repository and install necessary packages
+RUN apt-get update --fix-missing \
+    && apt-get upgrade -y \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends --fix-missing\
+        curl  \
+        unzip \
+        apt-transport-https  \
+        lsb-release  \
+        nano \
+        gnupg \
+        software-properties-common \
+        git \
+        python3 \
+        python3-pip \
+        python3-setuptools\
+    && rm -rf /var/lib/apt/lists/* 
+
+# # Install PowerShell  
+RUN curl -fsSL https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb -o packages-microsoft-prod.deb \  
+    && dpkg -i packages-microsoft-prod.deb \  
+    && apt-get update \  
+    && apt-get install -y powershell
+
+# Copy Bash and Powershell profiles
+RUN curl -s https://ohmyposh.dev/install.sh | bash -s
+
+RUN pwsh -Command  "Install-Module -Name Az.Accounts -Force -Scope AllUsers -AllowClobber"
+RUN pwsh -Command  "Install-Module -Name Az.Resources -Force -Scope AllUsers -AllowClobber"
+
+# # Install the Azure CLI
+RUN curl -sLS https://packages.microsoft.com/keys/microsoft.asc | \
+    gpg --dearmor | \
+    tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" | \
+    tee /etc/apt/sources.list.d/azure-cli.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends azure-cli=${AZURE_CLI_VERSION} && \
+    rm -rf /var/lib/apt/lists/*
+
+# ### Install Terraform
+RUN curl -fsSL https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -o /tmp/terraform.zip && \
+    unzip /tmp/terraform.zip -d /usr/bin && \
+    rm /tmp/terraform.zip
