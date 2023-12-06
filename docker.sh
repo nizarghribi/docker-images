@@ -12,6 +12,7 @@ TARGET="$2"
 # Build the Docker image inside the specified folder
 build() {
   docker build -t "$TARGET:latest" "$TARGET"
+  docker image prune -f
 }
 
 # Run the Docker image interactively
