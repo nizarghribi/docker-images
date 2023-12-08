@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM mcr.microsoft.com/azure-cli:latest
 
 ## Add image labels
 LABEL maintainer="nizar.ghribi@gmail.com"
@@ -9,8 +9,7 @@ LABEL org.opencontainers.image.source https://github.com/nizarghribi/docker-imag
 # Set Environment Variables
 ENV SHELL=/bin/bash \
     DOCKER_BUILDKIT=1 \
-    TERRAFORM_VERSION=1.5.2 \
-    AZURE_CLI_VERSION=2.49.0-1~jammy
+    TERRAFORM_VERSION=1.5.2
 
 # Create a non-root user
 RUN adduser -D -u 1000 vscode
@@ -18,25 +17,13 @@ RUN adduser -D -u 1000 vscode
 # Update Alpine Software repository and install necessary packages
 RUN apk --no-cache add \
     bash \
-    bash-completion \
     ca-certificates \
     curl \
-    git \ 
+    git \
     python3
 
 # Install OhMyPosh
 RUN curl -s https://ohmyposh.dev/install.sh | bash -s
-
-# Install the Azure CLI
-ARG JP_VERSION="0.2.1"
-RUN --mount=type=bind,target=/azure-cli,source=./,rw apk add --no-cache bash-completion libintl icu-libs libc6-compat jq openssh-keygen \
-    && apk add --no-cache --virtual .build-deps gcc musl-dev linux-headers libffi-dev\
-    #&& update-ca-certificates && cd /azure-cli && ./scripts/install_full.sh && python ./scripts/trim_sdk.py \
-    && cat /azure-cli/az.completion > ~/.bashrc \
-    && dos2unix /root/.bashrc /usr/local/bin/az \
-    && arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && curl -L https://github.com/jmespath/jp/releases/download/${JP_VERSION}/jp-linux-$arch -o /usr/local/bin/jp \
-    && chmod +x /usr/local/bin/jp \
-    && apk del .build-deps
 
 # ### Install Terraform
 RUN curl -fsSL https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip -o /tmp/terraform.zip && \
