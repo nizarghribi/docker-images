@@ -11,7 +11,7 @@ TARGET="$2"
 
 # Build the Docker image inside the specified folder
 build() {
-  docker build -t "$TARGET:latest" "$TARGET"
+  docker build --no-cache -t "$TARGET:latest" "$TARGET"
   docker image prune -f
 }
 
