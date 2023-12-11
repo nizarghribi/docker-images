@@ -9,6 +9,7 @@ LABEL org.opencontainers.image.source https://github.com/nizarghribi/docker-imag
 # Set Environment Variables
 ENV SHELL=/bin/bash \
     DOCKER_BUILDKIT=1 \
+    PYTHONPATH=/usr/bin/python \
     TERRAFORM_VERSION=1.5.2
 
 # Create a non-root user
